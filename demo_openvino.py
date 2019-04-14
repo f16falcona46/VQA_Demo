@@ -46,8 +46,9 @@ def get_image_features(image_file_name, CNN_exec_net, input_blob, output_blob):
     im = im.astype(np.float32, copy=False)
     for c in range(3):
         im[:, :, c] = im[:, :, c] - mean_pixel[c]
-
-    #im = im.transpose((2,0,1)) # convert the image to RGBA
+    
+    #print(im.shape)
+    #im = im[..., [1, 0, 2]] # convert the image to RGBA
 
     
     # this axis dimension is required becuase VGG was trained on a dimension

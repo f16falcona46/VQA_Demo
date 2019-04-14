@@ -18,10 +18,7 @@ from urllib.parse import parse_qs
 # File paths for the model, all of these except the CNN Weights are 
 # provided in the repo, See the models/CNN/README.md to download VGG weights
 VQA_weights_file_name   = 'models/VQA/VQA_MODEL_WEIGHTS.hdf5'
-label_encoder_file_name = 'models/VQA/FULL_labelencoder_trainval.pkl'
-CNN_weights_file_name   = 'models/CNN/vgg16_weights.h5'
 classes_file_name       = 'classes.txt'
-VQA_ov_file_name        = "models/VQA.xml"
 CNN_ov_file_name        = "models/CNN.xml"
 device                  = "CPU"
 cpu_extensions          = ["/opt/intel/openvino_2019.1.094/deployment_tools/inference_engine/lib/intel64/libcpu_extension_avx2.so",
@@ -141,7 +138,8 @@ def main():
         y_sort_index = np.argsort(y_output)
         for label in reversed(y_sort_index[0,-5:]):
             best = labels[label]
-            print(best)
+            if y_output[0, label] < 0.5:
+                best = "Sorry, I'm not sure how to answer."
             break
         return [best.encode('utf-8')]
 
