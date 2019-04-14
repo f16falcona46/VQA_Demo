@@ -131,16 +131,19 @@ def main():
     def app(env, start_response):
         start_response("200 OK", [("Content-type", "text/html; charset=utf-8")])
         q = parse_qs(env["QUERY_STRING"])
-        print(q)
+        print(q['q'][0])
         image_features = get_image_features(q["f"][0], exec_net, input_blob, output_blob)
         question_features = get_question_features(q["q"][0])
         y_output = vqa_model.predict([question_features, image_features])
         y_sort_index = np.argsort(y_output)
+        found = False
         for label in reversed(y_sort_index[0,-5:]):
-            best = labels[label]
-            if y_output[0, label] < 0.5:
-                best = "Sorry, I'm not sure how to answer."
-            break
+            print(labels[label], y_output[0, label])
+            if not found:
+                found = True
+                best = labels[label]
+                if y_output[0, label] < 0.2:
+                    best = "Sorry, I'm not sure how to answer."
         return [best.encode('utf-8')]
 
     httpd = wsgiref.simple_server.make_server("localhost", 8080, app)

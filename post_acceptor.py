@@ -21,7 +21,7 @@ def main():
             fileitem = fields['file']
             fn = os.path.basename(fileitem.filename) 
             open('uploads/' + fn, 'wb').write(fileitem.file.read())
-            query = urlencode({'f': ("uploads/%s" % fileitem.filename), "q": fields['q']})
+            query = urlencode({'f': ("uploads/%s" % fileitem.filename), "q": fields.getlist('q')[0]})
             with urllib.request.urlopen("http://localhost:8080/?" + query) as r:
                contents = r.read()
             return [contents]
