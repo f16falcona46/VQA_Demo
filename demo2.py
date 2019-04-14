@@ -14,7 +14,6 @@ K.set_image_dim_ordering('th')
 VQA_weights_file_name   = 'models/VQA/VQA_MODEL_WEIGHTS.hdf5'
 label_encoder_file_name = 'models/VQA/FULL_labelencoder_trainval.pkl'
 CNN_weights_file_name   = 'models/CNN/vgg16_weights.h5'
-classes_file_name       = 'classes.txt'
 
 # Chagne the value of verbose to 0 to avoid printing the progress statements
 verbose = 1
@@ -100,7 +99,7 @@ def main():
     image_features = get_image_features(args.image_file_name, CNN_weights_file_name)
 
     if verbose : print("Loading question features ...")
-    question_features = get_question_features(args.question)
+    question_features = get_question_features(unicode(args.question, 'utf-8'))
 
     if verbose : print("Loading VQA Model ...")
     vqa_model = get_VQA_model(VQA_weights_file_name)
@@ -114,10 +113,11 @@ def main():
     # this means some of the answers were not part of trainng and thus would 
     # not show up in the result.
     # These 1000 answers are stored in the sklearn Encoder class
-    with open(classes_file_name, 'r') as content_file:
-        labels = content_file.read().split('\n')
+    labelencoder = joblib.load(label_encoder_file_name)
     for label in reversed(y_sort_index[0,-5:]):
-        a = labels[label]
+        print(label)
+        #a = labelencoder.inverse_transform(label)
+        a = "cool"
         b = round(y_output[0, label]*100, 2)
         print(str(b), "% ", a)
 

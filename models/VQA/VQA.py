@@ -1,7 +1,7 @@
 # modification of model from https://github.com/avisingh599/visual-qa
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers.core import Reshape, Activation, Dropout
-from keras.layers import LSTM, Merge, Dense
+from keras.layers import LSTM, Concatenate, Dense, Input
 
 def VQA_MODEL():
     image_feature_size          = 4096
@@ -15,28 +15,34 @@ def VQA_MODEL():
     dropout_pct                 = 0.5
 
 
+    in1 = Input(shape=(max_length_questions, word_feature_size))
+    in2 = Input(shape=(image_feature_size,))
     # Image model
-    model_image = Sequential()
-    model_image.add(Reshape((image_feature_size,), input_shape=(image_feature_size,)))
+    #model_image = Sequential()
+    #model_image.add(Reshape((image_feature_size,), input_shape=(image_feature_size,)))
+    a = Reshape((image_feature_size,), input_shape=(image_feature_size,))(in2)
 
     # Language Model
-    model_language = Sequential()
-    model_language.add(LSTM(number_of_hidden_units_LSTM, return_sequences=True, input_shape=(max_length_questions, word_feature_size)))
-    model_language.add(LSTM(number_of_hidden_units_LSTM, return_sequences=True))
-    model_language.add(LSTM(number_of_hidden_units_LSTM, return_sequences=False))
+    #model_language = Sequential()
+    #model_language.add(LSTM(number_of_hidden_units_LSTM, return_sequences=True, input_shape=(max_length_questions, word_feature_size)))
+    #model_language.add(LSTM(number_of_hidden_units_LSTM, return_sequences=True))
+    #model_language.add(LSTM(number_of_hidden_units_LSTM, return_sequences=False))
+    b = LSTM(number_of_hidden_units_LSTM, return_sequences=True, input_shape=(max_length_questions, word_feature_size))(in1)
+    b = LSTM(number_of_hidden_units_LSTM, return_sequences=True)(b)
+    b = LSTM(number_of_hidden_units_LSTM, return_sequences=False)(b)
 
     # combined model
-    model = Sequential()
-    model.add(Merge([model_language, model_image], mode='concat', concat_axis=1))
+    x = Concatenate(axis=1)([b, a])
 
-    for _ in xrange(number_of_dense_layers):
-        model.add(Dense(number_of_hidden_units, kernel_initializer='uniform'))
-        model.add(Activation(activation_function))
-        model.add(Dropout(dropout_pct))
+    for _ in range(number_of_dense_layers):
+        x = Dense(number_of_hidden_units, kernel_initializer='uniform')(x)
+        x = Activation(activation_function)(x)
+        x = Dropout(dropout_pct)(x)
 
-    model.add(Dense(1000))
-    model.add(Activation('softmax'))
+    x = Dense(1000)(x)
+    out = Activation('softmax')(x)
 
+    model = Model(inputs=[in1, in2], outputs=out)
     return model
 
 

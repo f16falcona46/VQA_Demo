@@ -14,7 +14,6 @@ K.set_image_dim_ordering('th')
 VQA_weights_file_name   = 'models/VQA/VQA_MODEL_WEIGHTS.hdf5'
 label_encoder_file_name = 'models/VQA/FULL_labelencoder_trainval.pkl'
 CNN_weights_file_name   = 'models/CNN/vgg16_weights.h5'
-classes_file_name       = 'classes.txt'
 
 # Chagne the value of verbose to 0 to avoid printing the progress statements
 verbose = 1
@@ -86,40 +85,13 @@ def get_question_features(question):
 
 
 def main():
-    ''' accepts command line arguments for image file and the question and 
-    builds the image model (VGG) and the VQA model (LSTM and MLP) 
-    prints the top 5 response along with the probability of each '''
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-image_file_name', type=str, default='test.jpg')
-    parser.add_argument('-question', type=str, default='What vechile is in the picture?')
-    args = parser.parse_args()
-
-    
-    if verbose : print("\n\n\nLoading image features ...")
-    image_features = get_image_features(args.image_file_name, CNN_weights_file_name)
-
-    if verbose : print("Loading question features ...")
-    question_features = get_question_features(args.question)
-
-    if verbose : print("Loading VQA Model ...")
-    vqa_model = get_VQA_model(VQA_weights_file_name)
-
-
-    if verbose : print("\n\n\nPredicting result ...") 
-    y_output = vqa_model.predict([question_features, image_features])
-    y_sort_index = np.argsort(y_output)
-
     # This task here is represented as a classification into a 1000 top answers
     # this means some of the answers were not part of trainng and thus would 
     # not show up in the result.
     # These 1000 answers are stored in the sklearn Encoder class
-    with open(classes_file_name, 'r') as content_file:
-        labels = content_file.read().split('\n')
-    for label in reversed(y_sort_index[0,-5:]):
-        a = labels[label]
-        b = round(y_output[0, label]*100, 2)
-        print(str(b), "% ", a)
+    labelencoder = joblib.load(label_encoder_file_name)
+    for x in xrange(1000):
+        print(labelencoder.inverse_transform(x))
 
 if __name__ == "__main__":
     main()

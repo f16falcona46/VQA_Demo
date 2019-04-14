@@ -1,7 +1,7 @@
 # Modificaiton of file obtained from here
 # https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
 
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers.core import Flatten, Dense, Dropout
 from keras.layers.convolutional import MaxPooling2D, ZeroPadding2D
 from keras.layers.convolutional import Conv2D as Convolution2D
@@ -92,7 +92,7 @@ def VGG_16(weights_path=None):
     model.add(Flatten())
     model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(4096, activation='relu'))
+    model.add(Dense(4096, activation='relu', name='actual_output'))
     model.add(Dropout(0.5))
     model.add(Dense(1000, activation='softmax'))
     
@@ -101,9 +101,7 @@ def VGG_16(weights_path=None):
         load_model_legacy(model, weights_path)
 
     #Remove the last two layers to get the 4096D activations
-    model = pop(model)
-    model = pop(model)
-        
+    model = Model(inputs=model.input, outputs=model.get_layer("actual_output").output)
 
     return model
 
